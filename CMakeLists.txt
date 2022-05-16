@@ -14,7 +14,7 @@
 #------------------------------------------------------------------------------#
 cmake_minimum_required(VERSION 3.16)
 
-project(Cabana LANGUAGES CXX)
+project(Cabana LANGUAGES CXX C)
 set(PROJECT_VERSION "1.0-dev")
 
 # If the user doesn't provide a build type default to release
@@ -109,6 +109,9 @@ if(SILO_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindSILO.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Cabana )
 endif()
+
+# find HDF5 (XDMF)
+Cabana_add_dependency( PACKAGE HDF5 )
 
 #------------------------------------------------------------------------------#
 # Architecture

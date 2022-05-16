@@ -52,4 +52,8 @@
 #include <Cajita_SiloParticleOutput.hpp>
 #endif
 
+#ifdef Cabana_ENABLE_HDF5
+#include <Cajita_HDF5ParticleOutput.hpp>
+#endif
+
 #endif // end CAJITA_HPP
