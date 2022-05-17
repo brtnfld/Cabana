@@ -67,6 +67,10 @@ if(Cabana_ENABLE_SILO)
   list(APPEND MPI_TESTS SiloParticleOutput)
 endif()
 
+if(Cabana_ENABLE_HDF5)
+  list(APPEND MPI_TESTS HDF5ParticleOutput)
+endif()
+
 Cabana_add_tests(PACKAGE Cajita NAMES ${SERIAL_TESTS})
 
 Cabana_add_tests(MPI PACKAGE Cajita NAMES ${MPI_TESTS})
