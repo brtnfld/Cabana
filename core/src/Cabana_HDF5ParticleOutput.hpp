@@ -233,6 +233,7 @@ void writeFields(
 {
     hid_t plist_id;
     hid_t dset_id;
+    hid_t dcpl_id;
     hid_t filespace_id;
     hid_t memspace_id;
 
@@ -261,8 +262,13 @@ void writeFields(
         HDF5Traits<typename SliceType::value_type>::type( &dtype, &precision );
 
     filespace_id = H5Screate_simple( 1, dimsf, NULL );
+
+    dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
+    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
+    H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
+
     dset_id = H5Dcreate( file_id, slice.label().c_str(), type_id, filespace_id,
-                         H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+                         H5P_DEFAULT, dcpl_id, H5P_DEFAULT );
 
     H5Sselect_hyperslab( filespace_id, H5S_SELECT_SET, offset, NULL, count,
                          NULL );
@@ -278,6 +284,7 @@ void writeFields(
               host_view.data() );
 
     H5Pclose( plist_id );
+    H5Pclose( dcpl_id );
     H5Sclose( memspace_id );
     H5Dclose( dset_id );
     H5Sclose( filespace_id );
@@ -303,6 +310,7 @@ void writeFields(
 {
     hid_t plist_id;
     hid_t dset_id;
+    hid_t dcpl_id;
     hid_t filespace_id;
     hid_t memspace_id;
 
@@ -339,8 +347,14 @@ void writeFields(
         HDF5Traits<typename SliceType::value_type>::type( &dtype, &precision );
 
     filespace_id = H5Screate_simple( 2, dimsf, NULL );
+
+
+    dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
+    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
+    H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
+
     dset_id = H5Dcreate( file_id, slice.label().c_str(), type_id, filespace_id,
-                         H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+                         H5P_DEFAULT, dcpl_id, H5P_DEFAULT );
 
     H5Sselect_hyperslab( filespace_id, H5S_SELECT_SET, offset, NULL, count,
                          NULL );
@@ -355,6 +369,7 @@ void writeFields(
               host_view.data() );
 
     H5Pclose( plist_id );
+    H5Pclose( dcpl_id );
     H5Sclose( memspace_id );
     H5Dclose( dset_id );
     H5Sclose( filespace_id );
@@ -380,6 +395,7 @@ void writeFields(
 {
     hid_t plist_id;
     hid_t dset_id;
+    hid_t dcpl_id;
     hid_t filespace_id;
     hid_t memspace_id;
 
@@ -420,8 +436,13 @@ void writeFields(
         HDF5Traits<typename SliceType::value_type>::type( &dtype, &precision );
 
     filespace_id = H5Screate_simple( 3, dimsf, NULL );
+
+    dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
+    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
+    H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
+
     dset_id = H5Dcreate( file_id, slice.label().c_str(), type_id, filespace_id,
-                         H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+                         H5P_DEFAULT, dcpl_id, H5P_DEFAULT );
 
     H5Sselect_hyperslab( filespace_id, H5S_SELECT_SET, offset, NULL, count,
                          NULL );
@@ -436,6 +457,7 @@ void writeFields(
               host_view.data() );
 
     H5Pclose( plist_id );
+    H5Pclose( dcpl_id );
     H5Sclose( memspace_id );
     H5Dclose( dset_id );
     H5Sclose( filespace_id );
@@ -497,6 +519,7 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
 
     hid_t plist_id;
     hid_t dset_id;
+    hid_t dcpl_id;
     hid_t file_id;
     hid_t filespace_id;
     hid_t memspace_id;
@@ -611,8 +634,12 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
     hid_t type_id = HDF5Traits<typename CoordSliceType::value_type>::type(
         &dtype, &precision );
 
+    dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
+    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
+    H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
+
     dset_id = H5Dcreate( file_id, coords_slice.label().c_str(), type_id,
-                         filespace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+                         filespace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT );
 
     H5Sselect_hyperslab( filespace_id, H5S_SELECT_SET, offset, NULL, count,
                          NULL );
@@ -622,6 +649,7 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
     H5Dclose( dset_id );
 
     H5Pclose( plist_id );
+    H5Pclose( dcpl_id );
     H5Sclose( filespace_id );
     H5Sclose( memspace_id );
 
