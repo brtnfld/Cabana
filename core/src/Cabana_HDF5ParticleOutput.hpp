@@ -551,7 +551,6 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
     filename_xdmf << prefix << "_" << time_step_index << ".xmf";
 
     plist_id = H5Pcreate( H5P_FILE_ACCESS );
-    H5Pset_fapl_mpio( plist_id, comm, MPI_INFO_NULL );
     H5Pset_libver_bounds( plist_id, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST );
 
 #if H5_VERSION_GE( 1, 10, 1 )
@@ -573,9 +572,13 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
         H5Pset_alignment( plist_id, h5_config.threshold, h5_config.alignment );
 
 #if H5_HAVE_SUBFILING_VFD
-    if ( h5_config.subfiling )
+    if ( h5_config.subfiling ) {
          H5Pset_fapl_subfiling(plist_id, NULL);
+    } else
 #endif
+    {
+      H5Pset_fapl_mpio( plist_id, comm, MPI_INFO_NULL );
+    }
 
     file_id = H5Fcreate( filename_hdf5.str().c_str(), H5F_ACC_TRUNC,
                          H5P_DEFAULT, plist_id );
