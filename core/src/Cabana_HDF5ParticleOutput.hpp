@@ -287,7 +287,6 @@ void writeFields(
     filespace_id = H5Screate_simple( 1, dimsf, NULL );
 
     dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
-    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
     H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
 
     dset_id = H5Dcreate( file_id, slice.label().c_str(), type_id, filespace_id,
@@ -372,7 +371,6 @@ void writeFields(
     filespace_id = H5Screate_simple( 2, dimsf, NULL );
 
     dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
-    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
     H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
 
     dset_id = H5Dcreate( file_id, slice.label().c_str(), type_id, filespace_id,
@@ -460,7 +458,6 @@ void writeFields(
     filespace_id = H5Screate_simple( 3, dimsf, NULL );
 
     dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
-    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
     H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
 
     dset_id = H5Dcreate( file_id, slice.label().c_str(), type_id, filespace_id,
@@ -724,7 +721,6 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
         &dtype, &precision );
 
     dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
-    // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
     H5Pset_fill_time( dcpl_id, H5D_FILL_TIME_NEVER );
 
     dset_id = H5Dcreate( file_id, coords_slice.label().c_str(), type_id,
