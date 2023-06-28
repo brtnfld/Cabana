@@ -32,8 +32,8 @@
 
 #include <hdf5.h>
 #if H5_HAVE_SUBFILING_VFD
+#include "H5FDioc.h"       /* Private header for the IOC VFD */
 #include "H5FDsubfiling.h" /* Private header for the subfiling VFD */
-#include "H5FDioc.h"
 #endif
 
 #include <mpi.h>
@@ -151,6 +151,20 @@ struct HDF5Config
     //! Use the subfiling file driver
     bool subfiling = false;
 
+    // Optional subfiling file driver configuration parameters
+
+    //! Size (in bytes) of data stripes in subfiles
+    int64_t subfiling_stripe_size = H5FD_SUBFILING_DEFAULT_STRIPE_SIZE;
+
+    //! Target number of subfiles to use
+    int32_t subfiling_stripe_count = H5FD_SUBFILING_DEFAULT_STRIPE_SIZE;
+
+    //! The method to use for selecting MPI ranks to be I/O concentrators.
+    H5FD_subfiling_ioc_select_t subfiling_ioc_selection =
+        SELECT_IOC_ONE_PER_NODE;
+
+    //! Number of I/O concentrator worker threads to use
+    int32_t subfiling_thread_pool_size = H5FD_IOC_DEFAULT_THREAD_POOL_SIZE;
 };
 
 //! \cond Impl
@@ -356,7 +370,6 @@ void writeFields(
         HDF5Traits<typename SliceType::value_type>::type( &dtype, &precision );
 
     filespace_id = H5Screate_simple( 2, dimsf, NULL );
-
 
     dcpl_id = H5Pcreate( H5P_DATASET_CREATE );
     // H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY);
@@ -578,12 +591,65 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
         H5Pset_alignment( plist_id, h5_config.threshold, h5_config.alignment );
 
 #if H5_HAVE_SUBFILING_VFD
-    if ( h5_config.subfiling ) {
-         H5Pset_fapl_subfiling(plist_id, NULL);
-    } else
+    if ( h5_config.subfiling )
+    {
+
+        H5FD_subfiling_config_t subfiling_config;
+        H5FD_ioc_config_t ioc_config;
+
+        H5FD_subfiling_config_t* subfiling_ptr = NULL;
+        H5FD_ioc_config_t* ioc_ptr = NULL;
+
+        // Get the default subfiling configuration parameters
+        hid_t fapl_id = H5I_INVALID_HID;
+
+        fapl_id = H5Pcreate( H5P_FILE_ACCESS );
+        H5Pget_fapl_subfiling( fapl_id, &subfiling_config );
+
+        if ( h5_config.subfiling_stripe_size !=
+             subfiling_config.shared_cfg.stripe_size )
+        {
+            subfiling_config.shared_cfg.stripe_size =
+                h5_config.subfiling_stripe_size;
+            if ( subfiling_ptr == NULL )
+                subfiling_ptr = &subfiling_config;
+        }
+        if ( h5_config.subfiling_stripe_count !=
+             subfiling_config.shared_cfg.stripe_count )
+        {
+            subfiling_config.shared_cfg.stripe_count =
+                h5_config.subfiling_stripe_count;
+            if ( subfiling_ptr == NULL )
+                subfiling_ptr = &subfiling_config;
+        }
+        if ( h5_config.subfiling_ioc_selection !=
+             subfiling_config.shared_cfg.ioc_selection )
+        {
+            subfiling_config.shared_cfg.ioc_selection =
+                h5_config.subfiling_ioc_selection;
+            if ( subfiling_ptr == NULL )
+                subfiling_ptr = &subfiling_config;
+        }
+        if ( h5_config.subfiling_thread_pool_size !=
+             H5FD_IOC_DEFAULT_THREAD_POOL_SIZE )
+        {
+
+            H5Pget_fapl_ioc( fapl_id, &ioc_config );
+            ioc_config.thread_pool_size = h5_config.subfiling_thread_pool_size;
+            if ( ioc_ptr == NULL )
+                ioc_ptr = &ioc_config;
+        }
+        H5Pclose( fapl_id );
+
+        if ( ioc_ptr != NULL )
+            H5Pset_fapl_ioc( subfiling_config.ioc_fapl_id, ioc_ptr );
+
+        H5Pset_fapl_subfiling( plist_id, subfiling_ptr );
+    }
+    else
 #endif
     {
-      H5Pset_fapl_mpio( plist_id, comm, MPI_INFO_NULL );
+        H5Pset_fapl_mpio( plist_id, comm, MPI_INFO_NULL );
     }
 
     file_id = H5Fcreate( filename_hdf5.str().c_str(), H5F_ACC_TRUNC,
