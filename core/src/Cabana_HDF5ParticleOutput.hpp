@@ -641,6 +641,8 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
         }
         H5Pclose( fapl_id );
 
+        H5Pset_mpi_params( plist_id, comm, MPI_INFO_NULL );
+
         if ( ioc_ptr != NULL )
             H5Pset_fapl_ioc( subfiling_config.ioc_fapl_id, ioc_ptr );
 
