@@ -38,8 +38,8 @@ struct P2GExampleFunctor
         : _x( x )
         , _y( y )
     {
-        static_assert( 1 == ScalarView::Rank, "First View must be of scalars" );
-        static_assert( 2 == VectorView::Rank,
+        static_assert( 1 == ScalarView::rank, "First View must be of scalars" );
+        static_assert( 2 == VectorView::rank,
                        "Second View must be of vectors" );
     }
 
@@ -84,8 +84,8 @@ struct G2PExampleFunctor
         : _x( x )
         , _t( t )
     {
-        static_assert( 1 == ScalarView::Rank, "First View must be of scalars" );
-        static_assert( 3 == TensorView::Rank,
+        static_assert( 1 == ScalarView::rank, "First View must be of scalars" );
+        static_assert( 3 == TensorView::rank,
                        "Second View must be of tensors" );
     }
 
@@ -252,9 +252,9 @@ void interpolationExample()
     auto scalar_view = scalar_grid_field->view();
 
     // Print out a random grid point before value interpolation.
-    std::cout << "Invididual grid point at (5, 5, 5):\n\tbefore "
+    std::cout << "Invididual grid point at (5, 5):\n\tbefore "
                  "p2g::value interpolation: "
-              << scalar_view( 5, 5, 5 );
+              << scalar_view( 5, 5, 0 );
 
     /*
       Cajita provides a basic set of P2G and G2P functors and corresponding
@@ -271,11 +271,11 @@ void interpolationExample()
 
     // Print out the same grid point after value interpolation.
     std::cout << "\n\tafter p2g::value interpolation: "
-              << scalar_view( 5, 5, 5 ) << "\n\n";
+              << scalar_view( 5, 5, 0 ) << "\n\n";
 
     // Print out before gradient interpolation.
     auto vector_view = vector_grid_field->view();
-    std::cout << "Invididual grid point at (5, 5, 5):\n\tbefore "
+    std::cout << "Invididual grid point at (5, 5):\n\tbefore "
                  "p2g::gradient interpolation: <";
     std::cout << vector_view( 5, 5, 0 ) << ", " << vector_view( 5, 5, 1 )
               << ">";
@@ -292,7 +292,7 @@ void interpolationExample()
 
     // Reset the grid to zero and print before divergence interpolation.
     Cajita::ArrayOp::assign( *vector_grid_field, 0.0, Cajita::Ghost() );
-    std::cout << "Invididual grid point at (5, 5, 5):\n\tbefore "
+    std::cout << "Invididual grid point at (5, 5):\n\tbefore "
                  "p2g::divergence interpolation: <";
     std::cout << vector_view( 5, 5, 0 ) << ", " << vector_view( 5, 5, 1 )
               << ">";
