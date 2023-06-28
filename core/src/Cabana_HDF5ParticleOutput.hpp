@@ -148,6 +148,8 @@ struct HDF5Config
     //! Cause all metadata for an object to be evicted from the cache
     bool evict_on_close = false;
 
+#if H5_HAVE_SUBFILING_VFD
+
     //! Use the subfiling file driver
     bool subfiling = false;
 
@@ -165,6 +167,7 @@ struct HDF5Config
 
     //! Number of I/O concentrator worker threads to use
     int32_t subfiling_thread_pool_size = H5FD_IOC_DEFAULT_THREAD_POOL_SIZE;
+#endif
 };
 
 //! \cond Impl
