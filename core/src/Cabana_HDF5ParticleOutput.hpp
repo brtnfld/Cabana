@@ -159,7 +159,7 @@ struct HDF5Config
     int64_t subfiling_stripe_size = H5FD_SUBFILING_DEFAULT_STRIPE_SIZE;
 
     //! Target number of subfiles to use
-    int32_t subfiling_stripe_count = H5FD_SUBFILING_DEFAULT_STRIPE_SIZE;
+    int32_t subfiling_stripe_count = H5FD_SUBFILING_DEFAULT_STRIPE_COUNT;
 
     //! The method to use for selecting MPI ranks to be I/O concentrators.
     H5FD_subfiling_ioc_select_t subfiling_ioc_selection =
