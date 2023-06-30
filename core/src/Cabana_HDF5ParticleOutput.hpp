@@ -31,7 +31,7 @@
 #include <Kokkos_Core.hpp>
 
 #include <hdf5.h>
-#if H5_HAVE_SUBFILING_VFD
+#ifdef H5_HAVE_SUBFILING_VFD
 #include "H5FDioc.h"       /* Private header for the IOC VFD */
 #include "H5FDsubfiling.h" /* Private header for the subfiling VFD */
 #endif
@@ -148,7 +148,7 @@ struct HDF5Config
     //! Cause all metadata for an object to be evicted from the cache
     bool evict_on_close = false;
 
-#if H5_HAVE_SUBFILING_VFD
+#ifdef H5_HAVE_SUBFILING_VFD
 
     //! Use the subfiling file driver
     bool subfiling = false;
@@ -590,7 +590,7 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
     if ( h5_config.align )
         H5Pset_alignment( plist_id, h5_config.threshold, h5_config.alignment );
 
-#if H5_HAVE_SUBFILING_VFD
+#ifdef H5_HAVE_SUBFILING_VFD
     if ( h5_config.subfiling )
     {
 
