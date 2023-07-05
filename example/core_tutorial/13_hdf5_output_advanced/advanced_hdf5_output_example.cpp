@@ -14,15 +14,16 @@
 #include <iostream>
 
 //---------------------------------------------------------------------------//
-// HDF5 output example
+// HDF5 output example with subfiling
 //---------------------------------------------------------------------------//
-void hdf5Output()
+void hdf5OutputSubfiling()
 {
     /*
-      HDF5 is a parallel file format for large datasets. In this example, we
-      will illustrate the process of storing a list of particles with
-      properties, such as position, velocity, mass, radius, etc., in an HDF5
-      file format.
+      The previous HDF5 example shows how to write in parallel to a single file
+      for all MPI ranks. In some cases, especially as the number of ranks grows,
+      it is much more performant to write to separate files and later recombine
+      into a final HDF5 file. This example is identical to the previous, but
+      shows how to use HDF5 subfiling.
     */
 
     /*
@@ -33,7 +34,7 @@ void hdf5Output()
     MPI_Comm_rank( MPI_COMM_WORLD, &comm_rank );
 
     if ( comm_rank == 0 )
-        std::cout << "Cabana HDF5 output example\n" << std::endl;
+        std::cout << "Cabana HDF5 subfiling output example\n" << std::endl;
 
     /*
       Start by declaring the types the particles will store. The first element
@@ -159,7 +160,7 @@ int main( int argc, char* argv[] )
     MPI_Init( &argc, &argv );
     Kokkos::initialize( argc, argv );
 
-    hdf5Output();
+    hdf5OutputSubfiling();
 
     Kokkos::finalize();
 
