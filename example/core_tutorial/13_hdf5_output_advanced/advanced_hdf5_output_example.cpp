@@ -175,8 +175,9 @@ void hdf5OutputSubfiling()
             // h5fuse.sh needs to be located in the same directory as the
             // executable.
 
-            const char* env_val = std::getenv( "H5FUSE" );
-            if ( env_val != NULL )
+            struct stat file_info;
+
+            if ( stat( "h5fuse.sh", &file_info ) == 0 )
             {
                 if ( h5_config.subfiling )
                 {
@@ -210,7 +211,7 @@ void hdf5OutputSubfiling()
                                 config_dir << ".";
 
                             // Find the name of the subfiling configuration file
-                            struct stat file_info;
+
                             stat( filename_hdf5.str().c_str(), &file_info );
 
                             char config_filename[PATH_MAX];
@@ -241,24 +242,28 @@ void hdf5OutputSubfiling()
     // Wait for all the h5fuse processes to complete
     if ( shmrank == 0 )
     {
-      int status;
-      for (int i = 0; i < nfork; i++) {
-        waitpid(-1, &status, 0);
-        if (WIFEXITED(status)) {
-          int ret;
+        int status;
+        for ( int i = 0; i < nfork; i++ )
+        {
+            waitpid( -1, &status, 0 );
+            if ( WIFEXITED( status ) )
+            {
+                int ret;
 
-          if ((ret = WEXITSTATUS(status)) != 0) {
-            printf("h5fuse process exited with error code %d\n", ret);
-            fflush(stdout);
-            MPI_Abort(MPI_COMM_WORLD, -1);
-          }
+                if ( ( ret = WEXITSTATUS( status ) ) != 0 )
+                {
+                    printf( "h5fuse process exited with error code %d\n", ret );
+                    fflush( stdout );
+                    MPI_Abort( MPI_COMM_WORLD, -1 );
+                }
+            }
+            else
+            {
+                printf( "h5fuse process terminated abnormally\n" );
+                fflush( stdout );
+                MPI_Abort( MPI_COMM_WORLD, -1 );
+            }
         }
-        else {
-          printf("h5fuse process terminated abnormally\n");
-          fflush(stdout);
-          MPI_Abort(MPI_COMM_WORLD, -1);
-        }
-      }
     }
 
     /*
