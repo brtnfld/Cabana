@@ -239,15 +239,26 @@ void hdf5OutputSubfiling()
     }
 
     // Wait for all the h5fuse processes to complete
-    if ( nfork != 0 )
+    if ( shmrank == 0 )
     {
-        if ( shmrank == 0 )
-        {
-            for ( int i = 0; i < nfork; i++ )
-            {
-                waitpid( -1, NULL, 0 );
-            }
+      int status;
+      for (int i = 0; i < nfork; i++) {
+        waitpid(-1, &status, 0);
+        if (WIFEXITED(status)) {
+          int ret;
+
+          if ((ret = WEXITSTATUS(status)) != 0) {
+            printf("h5fuse process exited with error code %d\n", ret);
+            fflush(stdout);
+            MPI_Abort(MPI_COMM_WORLD, -1);
+          }
         }
+        else {
+          printf("h5fuse process terminated abnormally\n");
+          fflush(stdout);
+          MPI_Abort(MPI_COMM_WORLD, -1);
+        }
+      }
     }
 
     /*
