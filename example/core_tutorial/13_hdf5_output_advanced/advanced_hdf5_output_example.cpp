@@ -12,6 +12,9 @@
 #include <Cabana_Core.hpp>
 
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 //---------------------------------------------------------------------------//
 // HDF5 output example with subfiling
@@ -91,9 +94,31 @@ void hdf5OutputSubfiling()
     // A configuration object is necessary for tuning HDF5 options.
     Cabana::Experimental::HDF5ParticleOutput::HDF5Config h5_config;
 
-    // For example, MPI I/O is independent by default, but collective operations
-    // can be enabled by setting:
-    h5_config.collective = true;
+    // Configure HDF5 to use the subfiling VFD
+    h5_config.subfiling = true;
+
+    // Setting the HDF5 alignment equal to subfiling's stripe size
+    // often achieves better performance
+    //
+    // Set the HDF5 alignment equal to subfiling's stripe size either by:
+    //
+    // (1) environment variable:
+    //
+    //     env_val = std::getenv("H5FD_SUBFILING_STRIPE_SIZE");
+    //     if(env_val != NULL) {
+    //        h5_config.align = true;
+    //        h5_config.threshold = 0;
+    //        h5_config.alignment = std::atoi(env_val);
+    //     }
+    //
+    // or
+    //
+    // (2) in the source:
+
+    h5_config.subfiling_stripe_size = 16 * 1024 * 124;
+    h5_config.align = true;
+    h5_config.threshold = 0;
+    h5_config.alignment = h5_config.subfiling_stripe_size;
 
     /*
       We will evolve the system for a total time of 100 timesteps and
@@ -104,6 +129,8 @@ void hdf5OutputSubfiling()
     auto time = 0.;
     int steps = final_time / dt;
     int print_freq = 10;
+    int nfork = 0;
+    int shmrank;
 
     // Main timestep loop
     for ( int step = 0; step < steps; step++ )
@@ -142,9 +169,85 @@ void hdf5OutputSubfiling()
             if ( comm_rank == 0 )
                 std::cout << "Output for step " << step << "/" << steps
                           << std::endl;
+
+            // h5fuse.sh is a tool for generating a hdf5 file from the subfiles
+            // Set the enviroment variable H5FUSE to enable this feature,
+            // h5fuse.sh needs to be located in the same directory as the
+            // executable.
+
+            const char* env_val = std::getenv( "H5FUSE" );
+            if ( env_val != NULL )
+            {
+                if ( h5_config.subfiling )
+                {
+
+                    MPI_Comm shmcomm;
+                    MPI_Comm_split_type( MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED,
+                                         0, MPI_INFO_NULL, &shmcomm );
+
+                    MPI_Comm_rank( shmcomm, &shmrank );
+
+                    // One rank from each node executes h5fuse.sh
+                    if ( shmrank == 0 )
+                    {
+                        pid_t pid = 0;
+
+                        pid = fork();
+                        nfork++;
+                        if ( pid == 0 )
+                        {
+                            std::stringstream filename_hdf5;
+                            filename_hdf5 << "particles"
+                                          << "_" << step << ".h5";
+
+                            // Directory containing the subfiling configuration
+                            // file
+                            std::stringstream config_dir;
+                            if ( const char* env_value = std::getenv(
+                                     H5FD_SUBFILING_CONFIG_FILE_PREFIX ) )
+                                config_dir << env_value;
+                            else
+                                config_dir << ".";
+
+                            // Find the name of the subfiling configuration file
+                            struct stat file_info;
+                            stat( filename_hdf5.str().c_str(), &file_info );
+
+                            char config_filename[PATH_MAX];
+                            snprintf(
+                                config_filename, PATH_MAX,
+                                "%s/" H5FD_SUBFILING_CONFIG_FILENAME_TEMPLATE,
+                                config_dir.str().c_str(),
+                                filename_hdf5.str().c_str(),
+                                (uint64_t)file_info.st_ino );
+
+                            // Call the h5fuse utility
+                            // Removes the subfiles in the process
+                            char* args[] = { strdup( "./h5fuse.sh" ),
+                                             strdup( "-r" ), strdup( "-f" ),
+                                             config_filename, NULL };
+
+                            execvp( args[0], args );
+                        }
+                    }
+                    MPI_Comm_free( &shmcomm );
+                }
+            }
         }
 
         time += dt;
+    }
+
+    // Wait for all the h5fuse processes to complete
+    if ( nfork != 0 )
+    {
+        if ( shmrank == 0 )
+        {
+            for ( int i = 0; i < nfork; i++ )
+            {
+                waitpid( -1, NULL, 0 );
+            }
+        }
     }
 
     /*
@@ -157,7 +260,18 @@ void hdf5OutputSubfiling()
 int main( int argc, char* argv[] )
 {
 
-    MPI_Init( &argc, &argv );
+    // The HDF5 Subfiling VFD requires MPI_Init_thread with MPI_THREAD_MULTIPLE
+
+    int mpi_thread_required = MPI_THREAD_MULTIPLE;
+    int mpi_thread_provided = 0;
+
+    MPI_Init_thread( &argc, &argv, mpi_thread_required, &mpi_thread_provided );
+    if ( mpi_thread_provided < mpi_thread_required )
+    {
+        std::cout << "MPI_THREAD_MULTIPLE not supported" << std::endl;
+        MPI_Abort( MPI_COMM_WORLD, -1 );
+    }
+
     Kokkos::initialize( argc, argv );
 
     hdf5OutputSubfiling();
