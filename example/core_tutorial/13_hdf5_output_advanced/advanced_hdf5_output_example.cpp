@@ -17,7 +17,7 @@
 #include <unistd.h>
 
 // "h5fuse.sh" was changed to "h5fuse" in later HDF5 versions.
-#if H5_VERSION_GE(1,14,4)
+#if H5_VERSION_GE( 1, 14, 4 )
 #define H5FUSE_EXEC "h5fuse"
 #else
 #define H5FUSE_EXEC "h5fuse.sh"
@@ -187,7 +187,6 @@ void hdf5OutputSubfiling()
             {
                 if ( h5_config.subfiling )
                 {
-
                     MPI_Comm shmcomm;
                     MPI_Comm_split_type( MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED,
                                          0, MPI_INFO_NULL, &shmcomm );
@@ -281,7 +280,6 @@ void hdf5OutputSubfiling()
 
 int main( int argc, char* argv[] )
 {
-
     // The HDF5 Subfiling VFD requires MPI_Init_thread with MPI_THREAD_MULTIPLE
 
     int mpi_thread_required = MPI_THREAD_MULTIPLE;
