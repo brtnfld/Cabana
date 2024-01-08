@@ -592,7 +592,6 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
 #ifdef H5_HAVE_SUBFILING_VFD
     if ( h5_config.subfiling )
     {
-
         H5FD_subfiling_config_t subfiling_config;
         H5FD_ioc_config_t ioc_config;
 
@@ -632,7 +631,6 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
         if ( h5_config.subfiling_thread_pool_size !=
              H5FD_IOC_DEFAULT_THREAD_POOL_SIZE )
         {
-
             H5Pget_fapl_ioc( fapl_id, &ioc_config );
             ioc_config.thread_pool_size = h5_config.subfiling_thread_pool_size;
             if ( ioc_ptr == NULL )
