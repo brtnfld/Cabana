@@ -621,10 +621,10 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
                 subfiling_ptr = &subfiling_config;
         }
         if ( h5_config.subfiling_ioc_selection !=
-             subfiling_config.shared_cfg.ioc_selection )
+             (int)subfiling_config.shared_cfg.ioc_selection )
         {
             subfiling_config.shared_cfg.ioc_selection =
-                h5_config.subfiling_ioc_selection;
+                (H5FD_subfiling_ioc_select_t)h5_config.subfiling_ioc_selection;
             if ( subfiling_ptr == NULL )
                 subfiling_ptr = &subfiling_config;
         }
