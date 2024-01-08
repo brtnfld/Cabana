@@ -162,8 +162,7 @@ struct HDF5Config
     int32_t subfiling_stripe_count = H5FD_SUBFILING_DEFAULT_STRIPE_COUNT;
 
     //! The method to use for selecting MPI ranks to be I/O concentrators.
-    H5FD_subfiling_ioc_select_t subfiling_ioc_selection =
-        SELECT_IOC_ONE_PER_NODE;
+    int subfiling_ioc_selection = SELECT_IOC_ONE_PER_NODE;
 
     //! Number of I/O concentrator worker threads to use
     int32_t subfiling_thread_pool_size = H5FD_IOC_DEFAULT_THREAD_POOL_SIZE;
