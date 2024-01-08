@@ -16,6 +16,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+// "h5fuse.sh" was changed to "h5fuse" in later HDF5 versions.
+#if H5_VERSION_GE(1,14,4)
+#define H5FUSE_EXEC "h5fuse"
+#else
+#define H5FUSE_EXEC "h5fuse.sh"
+#endif
+
 //---------------------------------------------------------------------------//
 // HDF5 output example with subfiling
 //---------------------------------------------------------------------------//
@@ -170,14 +177,13 @@ void hdf5OutputSubfiling()
                 std::cout << "Output for step " << step << "/" << steps
                           << std::endl;
 
-            // h5fuse.sh is a tool for generating a hdf5 file from the subfiles
-            // Set the enviroment variable H5FUSE to enable this feature,
-            // h5fuse.sh needs to be located in the same directory as the
+            // h5fuse is a tool for generating a hdf5 file from the subfiles.
+            // h5fuse needs to be located in the same directory as the
             // executable.
 
             struct stat file_info;
 
-            if ( stat( "h5fuse.sh", &file_info ) == 0 )
+            if ( stat( H5FUSE_EXEC, &file_info ) == 0 )
             {
                 if ( h5_config.subfiling )
                 {
@@ -188,7 +194,7 @@ void hdf5OutputSubfiling()
 
                     MPI_Comm_rank( shmcomm, &shmrank );
 
-                    // One rank from each node executes h5fuse.sh
+                    // One rank from each node executes h5fuse
                     if ( shmrank == 0 )
                     {
                         pid_t pid = 0;
@@ -224,7 +230,7 @@ void hdf5OutputSubfiling()
 
                             // Call the h5fuse utility
                             // Removes the subfiles in the process
-                            char* args[] = { strdup( "./h5fuse.sh" ),
+                            char* args[] = { strdup( H5FUSE_EXEC ),
                                              strdup( "-r" ), strdup( "-f" ),
                                              config_filename, NULL };
 

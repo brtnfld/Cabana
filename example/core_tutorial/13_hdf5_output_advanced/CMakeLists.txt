@@ -11,6 +11,11 @@
 
 add_executable(AdvancedHDF5Output advanced_hdf5_output_example.cpp)
 target_link_libraries(AdvancedHDF5Output cabanacore)
+if(EXISTS ${HDF5_C_INCLUDE_DIRS}/../bin/h5fuse.sh)
+  file(COPY ${HDF5_C_INCLUDE_DIRS}/../bin/h5fuse.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+elseif(EXISTS ${HDF5_C_INCLUDE_DIRS}/../bin/h5fuse)
+  file(COPY ${HDF5_C_INCLUDE_DIRS}/../bin/h5fuse DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 add_test(NAME Core_tutorial_13_subfiling COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}
   ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} $<TARGET_FILE:AdvancedHDF5Output> ${MPIEXEC_POSTFLAGS})
 set_tests_properties(Core_tutorial_13_subfiling PROPERTIES PROCESSORS ${MPIEXEC_MAX_NUMPROCS})
