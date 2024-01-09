@@ -170,17 +170,16 @@ jobs:
           ref: hdf5-1_14_3
           path: hdf5-1_14_3
       - name: Build HDF5
-        if: ${{ matrix.hdf5 }} == "HDF5" && ${{ matrix.distro }} == "ubuntu:latest" && ${{ matrix.cxx }} == "g++"
+        if: ${{ matrix.hdf5 }} == "HDF5" && ${{ matrix.distro }} == "ubuntu:latest" && ${{ matrix.cxx }} == "g++" && ${{ matrix.backend }} == "THREADS"
         working-directory: hdf5-1_14_3
         run: |
-          export CC=mpicc
-          export FC=mpif90
           mkdir hdf5
           cd hdf5
-          echo "HDF5_ROOT=$HOME/hdf5" >> $GITHUB_ENV
-          echo $HDF5_ROOT
+          export HDF5_ROOT=$HOME/hdf5
+          echo "HDF5_ROOT=$HDF5_ROOT" >> $GITHUB_ENV
           cmake -C ../config/cmake/cacheinit.cmake -G "Unix Makefiles" \
-            -DCMAKE_INSTALL_PREFIX=$HOME/hdf5 \
+            -DCMAKE_C_COMPILER="mpicc" \
+            -DCMAKE_INSTALL_PREFIX=$HDF5_ROOT \
             -DHDF5_BUILD_FORTRAN:BOOL=OFF \
             -DHDF5_BUILD_JAVA:BOOL=OFF \
             -DHDF5_BUILD_CPP_LIB:BOOL=OFF \
