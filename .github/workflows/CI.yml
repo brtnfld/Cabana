@@ -369,7 +369,7 @@ jobs:
             cabana_cmake_opts+=( -DCMAKE_DISABLE_FIND_PACKAGE_SILO=ON )
           fi
           if [[ ${HDF5} == 'HDF5' ]]; then
-            if [[${{ matrix.distro }} != *"ubuntu"*]]
+            if [[${{ matrix.distro }} != *"ubuntu"*]]; then
               git clone https://github.com/HDFGroup/hdf5.git --branch hdf5-1.14.3 --single-branch hdf5_1.14.3
               export HOME_DIR=$(echo ~)
               export CC=mpicc
