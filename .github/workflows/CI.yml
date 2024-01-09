@@ -162,6 +162,37 @@ jobs:
             ${hypre_cmake_opts[@]}
           cmake --build build --parallel 2
           cmake --install build
+      - name: Checkout HDF5
+        if: ${{ matrix.hdf5 == 'HDF5' }} && ${{ matrix.distro }} == "ubuntu:latest" && ${{ matrix.cxx }} == "g++"
+        uses: actions/checkout@v3
+        with:
+          repository: HDFGroup/hdf5
+          ref: hdf5-1_14_3
+          path: hdf5-1_14_3
+      - name: Build HDF5
+        if [[ ${{ matrix.hdf5 == 'HDF5' }} ]]; then
+          if [[ ${{ matrix.distro }} == "ubuntu:latest" && ${{ matrix.cxx }} == "g++" ]]; then
+            working-directory: hdf5-1_14_3
+            export CC=mpicc
+            export FC=mpif90
+            cd hdf5-1_14_3
+            echo "HDF5_ROOT=$PWD/hdf5" >> $GITHUB_ENV
+            cmake -C ../config/cmake/cacheinit.cmake -G "Unix Makefiles" \
+            -DCMAKE_INSTALL_PREFIX=$HDF5_ROOT \
+            -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF \
+            -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=OFF \
+            -DBUILD_TESTING:BOOL=OFF \
+            -DENABLE_EXTENDED_TESTS:BOOL=OFF \
+            -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
+            -DHDF5_BUILD_HL_LIB:BOOL=OFF \
+            -DHDF5_BUILD_TOOLS=OFF \
+            -DHDF5_ENABLE_PARALLEL=ON \
+            -DHDF5_ENABLE_SUBFILING_VFD=ON\
+            -DBUILD_SHARED_LIBS:BOOL=ON \
+            ..
+            make -j 8 install
+          fi
+        fi
       - name: Checkout ALL
         if: ${{ matrix.liball == 'libALL' }}
         run: |
@@ -187,28 +218,6 @@ jobs:
             cabana_cmake_opts+=( -DCMAKE_DISABLE_FIND_PACKAGE_SILO=ON )
           fi
           if [[ ${HDF5} == 'HDF5' ]]; then
-            if [[ ${{ matrix.distro }} == "ubuntu:latest" && ${{ matrix.cxx }} == "g++" ]]; then
-              git clone https://github.com/HDFGroup/hdf5.git --branch hdf5_1_14_3 --single-branch hdf5_1_14_3
-              export HOME_DIR=$(echo ~)
-              echo "HDF5_ROOT=$HOME_DIR/hdf5" >> $GITHUB_ENV
-              export CC=mpicc
-              export FC=mpif90
-              cd hdf5_1_14_3
-              cmake -C ../config/cmake/cacheinit.cmake -G "Unix Makefiles" \
-              -DCMAKE_INSTALL_PREFIX=$HDF5_ROOT \
-              -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF \
-              -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=OFF \
-              -DBUILD_TESTING:BOOL=OFF \
-              -DENABLE_EXTENDED_TESTS:BOOL=OFF \
-              -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
-              -DHDF5_BUILD_HL_LIB:BOOL=OFF \
-              -DHDF5_BUILD_TOOLS=OFF \
-              -DHDF5_ENABLE_PARALLEL=ON \
-              -DHDF5_ENABLE_SUBFILING_VFD=ON\
-              -DBUILD_SHARED_LIBS:BOOL=ON \
-              ..
-              make -j 8 install
-            fi
             cabana_cmake_opts+=( -DCabana_REQUIRE_HDF5=ON )
           else
             cabana_cmake_opts+=( -DCMAKE_DISABLE_FIND_PACKAGE_HDF5=ON )
