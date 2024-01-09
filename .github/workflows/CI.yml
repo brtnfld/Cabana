@@ -192,8 +192,6 @@ jobs:
             -DBUILD_SHARED_LIBS:BOOL=ON \
             ..
             make -j 8 install
-          fi
-        fi
       - name: Checkout ALL
         if: ${{ matrix.liball == 'libALL' }}
         run: |
