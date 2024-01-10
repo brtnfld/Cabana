@@ -173,9 +173,7 @@ jobs:
         if: ${{ matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++' }}
         working-directory: hdf5-1_14_3
         run: |
-          export HDF5_ROOT=$HOME/hdf5
-          echo "HDF5_ROOT=$HDF5_ROOT" >> $GITHUB_ENV
-          cmake -B hdf5 -C ../config/cmake/cacheinit.cmake -G "Unix Makefiles" \
+          cmake -B hdf5 -C ../config/cmake/cacheinit.cmake \
             -DCMAKE_C_COMPILER="mpicc" \
             -DCMAKE_INSTALL_PREFIX=$HDF5_ROOT \
             -DHDF5_BUILD_FORTRAN:BOOL=OFF \
@@ -194,6 +192,8 @@ jobs:
             ..
           cmake --build hdf5 --parallel 2
           cmake --install hdf5
+          export HDF5_ROOT=$HOME/hdf5
+          echo "HDF5_ROOT=$HDF5_ROOT" >> $GITHUB_ENV
       - name: Checkout ALL
         if: ${{ matrix.liball == 'libALL' }}
         run: |
