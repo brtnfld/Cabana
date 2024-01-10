@@ -173,11 +173,9 @@ jobs:
         if: ${{ matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++' }}
         working-directory: hdf5-1_14_3
         run: |
-          mkdir hdf5
-          cd hdf5
           export HDF5_ROOT=$HOME/hdf5
           echo "HDF5_ROOT=$HDF5_ROOT" >> $GITHUB_ENV
-          cmake -C ../config/cmake/cacheinit.cmake -G "Unix Makefiles" \
+          cmake -B hdf5 -C ../config/cmake/cacheinit.cmake -G "Unix Makefiles" \
             -DCMAKE_C_COMPILER="mpicc" \
             -DCMAKE_INSTALL_PREFIX=$HDF5_ROOT \
             -DHDF5_BUILD_FORTRAN:BOOL=OFF \
@@ -194,7 +192,8 @@ jobs:
             -DHDF5_ENABLE_SUBFILING_VFD:BOOL=ON\
             -DBUILD_SHARED_LIBS:BOOL=ON \
             ..
-          make -j 8 install
+          cmake --build hdf5 --parallel 2
+          cmake --install hdf5
       - name: Checkout ALL
         if: ${{ matrix.liball == 'libALL' }}
         run: |
