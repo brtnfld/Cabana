@@ -10,8 +10,8 @@
 ############################################################################
 
 add_executable(AdvancedHDF5Output advanced_hdf5_output_example.cpp)
-target_link_libraries(AdvancedHDF5Output cabanacore)
-get_filename_component(HDF5_BIN_DIR ${HDF5_C_COMPILER_EXECUTABLE} DIRECTORY)
+target_link_libraries(AdvancedHDF5Output Cabana::Core)
+set(HDF5_BIN_DIR ${HDF5_ROOT}/bin)
 if(EXISTS ${HDF5_BIN_DIR}/h5fuse.sh)
   file(COPY ${HDF5_BIN_DIR}/h5fuse.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 elseif(EXISTS ${HDF5_BIN_DIR}/h5fuse)
