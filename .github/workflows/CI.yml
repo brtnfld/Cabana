@@ -163,14 +163,14 @@ jobs:
           cmake --build build --parallel 2
           cmake --install build
       - name: Checkout HDF5
-        if: matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++' && matrix.backend == 'OPENMP'
+        if: matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++'
         uses: actions/checkout@v3
         with:
           repository: HDFGroup/hdf5
           ref: hdf5-1_14_3
           path: hdf5-1_14_3
       - name: Build HDF5
-        if: matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++' && matrix.backend == 'OPENMP'
+        if: matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++'
         working-directory: hdf5-1_14_3
         run: |
           mkdir hdf5
@@ -189,7 +189,7 @@ jobs:
             -DBUILD_TESTING:BOOL=OFF \
             -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
             -DHDF5_BUILD_HL_LIB:BOOL=OFF \
-            -DHDF5_BUILD_TOOLS:BOOL=ON \
+            -DHDF5_BUILD_TOOLS:BOOL=OFF \
             -DHDF5_ENABLE_PARALLEL:BOOL=ON \
             -DHDF5_ENABLE_SUBFILING_VFD:BOOL=ON\
             -DBUILD_SHARED_LIBS:BOOL=ON \
