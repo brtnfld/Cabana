@@ -163,14 +163,14 @@ jobs:
           cmake --build build --parallel 2
           cmake --install build
       - name: Checkout HDF5
-        if: matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++'
+        if: ${{ matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++' }}
         uses: actions/checkout@v3
         with:
           repository: HDFGroup/hdf5
           ref: hdf5-1_14_3
           path: hdf5-1_14_3
       - name: Build HDF5
-        if: matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++'
+        if: ${{ matrix.hdf5 == 'HDF5' && matrix.distro == 'ubuntu:latest' && matrix.cxx == 'g++' }}
         working-directory: hdf5-1_14_3
         run: |
           mkdir hdf5
