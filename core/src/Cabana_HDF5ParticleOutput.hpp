@@ -166,6 +166,15 @@ struct HDF5Config
 
     //! Number of I/O concentrator worker threads to use
     int32_t subfiling_thread_pool_size = H5FD_IOC_DEFAULT_THREAD_POOL_SIZE;
+
+    //! Return information for use with h5fuse
+    bool h5fuse_info = false;
+
+    //! Subfiling list of files for current rank
+    bool h5fuse_local = false; // h5fuse only a node local view of the subfiles
+    std::string subfilenames;
+    size_t subfilenames_len = 0;
+
 #endif
 };
 
@@ -536,7 +545,7 @@ void writeFields( HDF5Config h5_config, hid_t file_id, std::size_t n_local,
   \param fields Variadic list of particle property fields.
 */
 template <class CoordSliceType, class... FieldSliceTypes>
-void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
+void writeTimeStep( HDF5Config& h5_config, const std::string& prefix,
                     MPI_Comm comm, const int time_step_index, const double time,
                     const std::size_t n_local,
                     const CoordSliceType& coords_slice,
@@ -653,6 +662,7 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
 
     file_id = H5Fcreate( filename_hdf5.str().c_str(), H5F_ACC_TRUNC,
                          H5P_DEFAULT, plist_id );
+
     H5Pclose( plist_id );
 
     // Write current simulation time
@@ -753,6 +763,42 @@ void writeTimeStep( HDF5Config h5_config, const std::string& prefix,
     writeFields( h5_config, file_id, n_local, n_global, n_offset, comm_rank,
                  filename_hdf5.str().c_str(), filename_xdmf.str().c_str(),
                  fields... );
+
+#ifdef H5_HAVE_SUBFILING_VFD
+    if ( h5_config.h5fuse_info )
+      {
+        char **filenames = NULL;
+        size_t len = 0;
+        H5FDsubfiling_get_file_mapping(file_id, &filenames, &len);
+
+        h5_config.subfilenames_len = len;
+
+        // Allocate sufficient space for the concatenated string
+        size_t total_length = 0;
+        for (size_t i = 0; i < len; i++) {
+          total_length += std::strlen(filenames[i]) + 1; // Add 1 for commas
+        }
+
+        // Pre-allocate for efficiency
+        h5_config.subfilenames.reserve(total_length);
+
+        // Concatenate the C strings with commas
+        for (size_t i = 0; i < len; i++) {
+          h5_config.subfilenames += filenames[i];
+          if(i < len - 1) {
+            h5_config.subfilenames += ",";
+          }
+        }
+
+        // free the memory allocated by H5FDsubfiling_get_file_mapping
+        if (len > 0) {
+          for (size_t i = 0; i < len; i++) {
+            H5free_memory(filenames[i]);
+          }
+          H5free_memory(filenames);
+        }
+      }
+#endif
 
     H5Fclose( file_id );
 
